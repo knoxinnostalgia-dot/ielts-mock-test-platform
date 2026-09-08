@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import { RadarChart } from '@/components/charts/RadarChart'
 import { RecordingPlayback } from '@/components/exam/RecordingPlayback'
+import { CertificateClaimModal } from '@/components/exam/CertificateClaimModal'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
@@ -46,6 +47,7 @@ export default function Results() {
   const { startSession } = useSession()
   const [tab, setTab] = useState<TabId>('overview')
   const [downloading, setDownloading] = useState(false)
+  const [certificateOpen, setCertificateOpen] = useState(false)
 
   const result: TestResult | null = useMemo(() => {
     const fromProfile = profile.results.find((item) => item.id === resultId)
@@ -78,6 +80,7 @@ export default function Results() {
   }
 
   const band = cefrBand(result.cefr)
+  const hasCertificate = profile.certificates.some((item) => item.resultId === result.id)
 
   const sectionScores: { skill: SkillId; score: number; detail: string }[] = []
   if (result.listening)
@@ -182,7 +185,10 @@ export default function Results() {
           </div>
 
           <div className="relative flex flex-col gap-2">
-            <Button icon="download" loading={downloading} onClick={handleDownload}>
+            <Button icon="trophy" onClick={() => setCertificateOpen(true)}>
+              {hasCertificate ? 'Download Certificate' : 'Get Certificate'}
+            </Button>
+            <Button variant="outline" icon="download" loading={downloading} onClick={handleDownload}>
               Download PDF Report
             </Button>
             <Button variant="outline" icon="refresh" onClick={() => retake('full')}>
@@ -282,6 +288,12 @@ export default function Results() {
       {tab === 'writing' && <WritingTab result={result} />}
       {tab === 'speaking' && <SpeakingTab result={result} />}
       {tab === 'integrity' && <IntegrityTab result={result} />}
+
+      <CertificateClaimModal
+        open={certificateOpen}
+        result={result}
+        onClose={() => setCertificateOpen(false)}
+      />
     </div>
   )
 }

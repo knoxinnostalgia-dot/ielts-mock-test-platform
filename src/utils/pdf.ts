@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf'
 
-import type { AnalyticsMetric, SkillId, TestResult } from '@/types'
+import type { AnalyticsMetric, IssuedCertificate, SkillId, TestResult } from '@/types'
 import { CEFR_BANDS, cefrBand } from './cefr'
 import { SKILL_LABELS } from './constants'
 import { formatDate, formatDuration } from './time'
@@ -381,4 +381,109 @@ export function downloadReport(result: TestResult): void {
   const doc = buildReportDocument(result)
   const safeName = result.candidateName.replace(/[^\w-]+/g, '_') || 'candidate'
   doc.save(`IELTS_Report_${safeName}_${formatDate(result.completedAt).replace(/\s+/g, '-')}.pdf`)
+}
+
+const CERT = {
+  navy: [22, 29, 87] as const,
+  gold: [180, 136, 58] as const,
+  cream: [252, 248, 239] as const,
+  ink: [30, 41, 59] as const,
+  muted: [100, 116, 139] as const,
+}
+
+export function downloadCertificate(result: TestResult, certificate: IssuedCertificate): void {
+  const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'landscape' })
+  const width = doc.internal.pageSize.getWidth()
+  const height = doc.internal.pageSize.getHeight()
+
+  doc.setFillColor(...CERT.navy)
+  doc.rect(0, 0, width, height, 'F')
+  doc.setFillColor(...CERT.gold)
+  doc.rect(18, 18, width - 36, height - 36, 'F')
+  doc.setFillColor(...CERT.cream)
+  doc.rect(26, 26, width - 52, height - 52, 'F')
+
+  doc.setDrawColor(...CERT.navy)
+  doc.setLineWidth(0.8)
+  doc.rect(40, 40, width - 80, height - 80)
+
+  const center = width / 2
+  const band = cefrBand(result.cefr)
+  const skillLine =
+    result.mode === 'full'
+      ? 'Full Mock Test · Listening · Reading · Writing · Speaking'
+      : result.skills.map((skill) => SKILL_LABELS[skill]).join(' · ')
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(11)
+  doc.setTextColor(...CERT.navy)
+  doc.text('IELTS MOCK TEST PLATFORM', center, 78, { align: 'center' })
+
+  doc.setDrawColor(...CERT.gold)
+  doc.setLineWidth(1.4)
+  doc.line(center - 70, 88, center + 70, 88)
+
+  doc.setFont('times', 'bold')
+  doc.setFontSize(34)
+  doc.setTextColor(...CERT.navy)
+  doc.text('Certificate of Completion', center, 132, { align: 'center' })
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(11)
+  doc.setTextColor(...CERT.muted)
+  doc.text('This is to certify that', center, 168, { align: 'center' })
+
+  doc.setFont('times', 'bolditalic')
+  doc.setFontSize(28)
+  doc.setTextColor(...CERT.ink)
+  doc.text(certificate.candidateName, center, 208, { align: 'center' })
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.setTextColor(...CERT.muted)
+  doc.text(certificate.email, center, 226, { align: 'center' })
+
+  doc.setFontSize(12)
+  doc.setTextColor(...CERT.ink)
+  const body = doc.splitTextToSize(
+    `has completed the ${skillLine} assessment and achieved an overall CEFR level of ${result.cefr} (${band.label}) with a score of ${result.overallScore}%.`,
+    width - 160,
+  ) as string[]
+  doc.text(body, center, 258, { align: 'center' })
+
+  const boxY = 318
+  const boxW = 150
+  const boxes = [
+    { label: 'CEFR Level', value: result.cefr },
+    { label: 'Overall Score', value: `${result.overallScore}%` },
+    { label: 'Date Awarded', value: formatDate(certificate.issuedAt) },
+  ]
+  boxes.forEach((box, index) => {
+    const x = center - (boxW * 1.5 + 16) + index * (boxW + 16)
+    doc.setFillColor(255, 255, 255)
+    doc.setDrawColor(...CERT.gold)
+    doc.setLineWidth(0.7)
+    doc.roundedRect(x, boxY, boxW, 54, 6, 6, 'FD')
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.setTextColor(...CERT.muted)
+    doc.text(box.label.toUpperCase(), x + boxW / 2, boxY + 18, { align: 'center' })
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(14)
+    doc.setTextColor(...CERT.navy)
+    doc.text(box.value, x + boxW / 2, boxY + 38, { align: 'center' })
+  })
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8)
+  doc.setTextColor(...CERT.muted)
+  doc.text(
+    `Certificate ID ${certificate.id}  ·  Practice award generated on this device  ·  Not an official IELTS certificate`,
+    center,
+    height - 58,
+    { align: 'center' },
+  )
+
+  const safeName = certificate.candidateName.replace(/[^\w-]+/g, '_') || 'candidate'
+  doc.save(`IELTS_Certificate_${safeName}_${result.cefr}.pdf`)
 }

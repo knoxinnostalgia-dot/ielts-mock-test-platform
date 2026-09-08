@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-import type { CandidateProfile, Difficulty, TestResult } from '@/types'
+import type { CandidateProfile, Difficulty, IssuedCertificate, TestResult } from '@/types'
 import type { ProfileStats } from '@/utils/profile'
 
 export interface ProfileContextValue {
@@ -11,6 +11,10 @@ export interface ProfileContextValue {
   setName: (name: string) => void
   setDifficulty: (difficulty: Difficulty) => void
   setAutoAdapt: (enabled: boolean) => void
+  /** Saves name and email so the candidate can claim certificates on this device. */
+  signIn: (name: string, email: string) => void
+  /** Issues or refreshes a certificate record for a completed test. */
+  issueCertificate: (result: TestResult, name: string, email: string) => IssuedCertificate
   /** Persists a finished test, updates streak, adapts difficulty, unlocks achievements. */
   commitResult: (result: TestResult) => string[]
   deleteResult: (resultId: string) => void

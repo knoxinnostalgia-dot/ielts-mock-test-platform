@@ -29,6 +29,10 @@ Share that URL. Testers use the app in their own browsers; scores stay on their
 devices. GitHub Pages is HTTPS, which is required for camera, microphone, and
 fullscreen exam mode.
 
+After a test, **Get Certificate** asks for a name and email, then downloads a
+practice certificate PDF. GitHub Pages cannot send email, so nothing is mailed.
+The email is stored only on that person's device.
+
 To publish from a fresh clone:
 
 ```bash

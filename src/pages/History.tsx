@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { CertificateClaimModal } from '@/components/exam/CertificateClaimModal'
 import { PerformanceHeatmap } from '@/components/charts/Heatmaps'
 import { TrendChart } from '@/components/charts/TrendChart'
 import { Badge } from '@/components/ui/Badge'
@@ -23,6 +24,7 @@ export default function History() {
   const { profile, stats, deleteResult, resetProfile } = useProfile()
   const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [certificateResultId, setCertificateResultId] = useState<string | null>(null)
 
   const results = [...profile.results].reverse()
 
@@ -140,6 +142,16 @@ export default function History() {
                       </Button>
                       <Button
                         size="sm"
+                        variant="outline"
+                        icon="trophy"
+                        onClick={() => setCertificateResultId(result.id)}
+                      >
+                        {profile.certificates.some((item) => item.resultId === result.id)
+                          ? 'Certificate'
+                          : 'Get Certificate'}
+                      </Button>
+                      <Button
+                        size="sm"
                         variant="ghost"
                         icon="download"
                         onClick={() => downloadReport(result)}
@@ -211,6 +223,11 @@ export default function History() {
             </Button>
           </>
         }
+      />
+      <CertificateClaimModal
+        open={!!certificateResultId}
+        result={results.find((item) => item.id === certificateResultId) ?? null}
+        onClose={() => setCertificateResultId(null)}
       />
     </div>
   )

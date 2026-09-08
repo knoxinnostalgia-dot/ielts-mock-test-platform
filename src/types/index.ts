@@ -379,8 +379,23 @@ export interface StreakState {
   history: string[]
 }
 
+export interface IssuedCertificate {
+  id: string
+  resultId: string
+  candidateName: string
+  email: string
+  issuedAt: number
+  overallScore: number
+  cefr: CEFRLevel
+  mode: TestMode
+  skills: SkillId[]
+}
+
 export interface CandidateProfile {
   name: string
+  email: string
+  /** Set when the candidate signs in to claim a certificate. */
+  signedInAt: number | null
   difficulty: Difficulty
   /** Automatically tuned from performance; `difficulty` is the manual override. */
   adaptiveDifficulty: Difficulty
@@ -388,4 +403,5 @@ export interface CandidateProfile {
   streak: StreakState
   achievements: UnlockedAchievement[]
   results: TestResult[]
+  certificates: IssuedCertificate[]
 }

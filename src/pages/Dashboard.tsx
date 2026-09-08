@@ -201,6 +201,9 @@ export default function Dashboard() {
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                 Take a full four-module mock under exam conditions, or drill a single skill. Every
                 test is scored locally, mapped to CEFR, and monitored for integrity.
+                {profile.email
+                  ? ` Certificates for ${profile.email} can be downloaded after each test.`
+                  : ' After a test you can sign in with your email to download a practice certificate.'}
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">

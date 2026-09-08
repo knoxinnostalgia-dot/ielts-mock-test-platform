@@ -12,13 +12,27 @@ import { daysBetween, toDayKey } from './time'
 export function createProfile(): CandidateProfile {
   return {
     name: 'Candidate',
+    email: '',
+    signedInAt: null,
     difficulty: 'intermediate',
     adaptiveDifficulty: 'intermediate',
     autoAdapt: true,
     streak: { current: 0, longest: 0, lastPracticeDate: null, history: [] },
     achievements: [],
     results: [],
+    certificates: [],
   }
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+export function isValidEmail(value: string): boolean {
+  return EMAIL_PATTERN.test(value.trim())
+}
+
+export function isCertificateAccountReady(profile: CandidateProfile): boolean {
+  const name = profile.name.trim()
+  return name.length >= 2 && name.toLowerCase() !== 'candidate' && isValidEmail(profile.email)
 }
 
 /** Advances the streak for today; idempotent within the same calendar day. */
