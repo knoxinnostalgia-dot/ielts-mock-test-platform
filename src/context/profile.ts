@@ -1,0 +1,29 @@
+import { createContext, useContext } from 'react'
+
+import type { CandidateProfile, Difficulty, TestResult } from '@/types'
+import type { ProfileStats } from '@/utils/profile'
+
+export interface ProfileContextValue {
+  profile: CandidateProfile
+  stats: ProfileStats
+  /** Difficulty actually used to select content (respects the auto-adapt toggle). */
+  currentDifficulty: Difficulty
+  setName: (name: string) => void
+  setDifficulty: (difficulty: Difficulty) => void
+  setAutoAdapt: (enabled: boolean) => void
+  /** Persists a finished test, updates streak, adapts difficulty, unlocks achievements. */
+  commitResult: (result: TestResult) => string[]
+  deleteResult: (resultId: string) => void
+  resetProfile: () => void
+  /** Achievement ids unlocked by the most recent commit, for the celebration toast. */
+  recentUnlocks: string[]
+  clearRecentUnlocks: () => void
+}
+
+export const ProfileContext = createContext<ProfileContextValue | null>(null)
+
+export function useProfile(): ProfileContextValue {
+  const context = useContext(ProfileContext)
+  if (!context) throw new Error('useProfile must be used inside <ProfileProvider>')
+  return context
+}
