@@ -86,13 +86,14 @@ export function QuestionNavigator({
                     aria-current={isCurrent ? 'true' : undefined}
                     aria-label={`Question ${question.label}${answered ? ', answered' : ', unanswered'}${isFlagged ? ', flagged for review' : ''}`}
                     className={cn(
-                      'relative flex h-9 w-full items-center justify-center rounded-lg border text-xs font-bold transition',
+                      'relative flex h-9 w-full items-center justify-center rounded-lg border-2 border-b-4 text-xs font-bold transition',
                       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
                       'disabled:cursor-not-allowed disabled:opacity-50',
                       answered
-                        ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        ? 'border-emerald-400 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                         : 'border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-400',
-                      isCurrent && 'ring-2 ring-brand-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900',
+                      isCurrent &&
+                        'border-brand-500 bg-brand-600 text-white shadow-[0_3px_0_0_#1a34e1]',
                     )}
                   >
                     {question.label}

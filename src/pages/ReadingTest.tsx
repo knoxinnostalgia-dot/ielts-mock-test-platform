@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { ChoiceQuestionCard } from '@/components/exam/ChoiceQuestionCard'
+import { ExamActionBar } from '@/components/exam/ExamActionBar'
 import { ExamShell } from '@/components/exam/ExamShell'
 import { IntegrityPanel } from '@/components/exam/IntegrityPanel'
 import { QuestionNavigator } from '@/components/exam/QuestionNavigator'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 import { Alert } from '@/components/ui/Feedback'
 import { useSession } from '@/context/session'
@@ -150,39 +150,8 @@ export default function ReadingTest() {
         )}
       </div>
 
-      <footer className="flex items-center gap-2 border-t border-slate-200 p-3 dark:border-slate-800">
-        <Button
-          variant="outline"
-          size="sm"
-          icon="chevronLeft"
-          disabled={currentIndex === 0 || locked}
-          onClick={() => goTo(currentIndex - 1)}
-        >
-          Previous
-        </Button>
-        <span className="mx-auto text-xs font-medium text-slate-400">
-          {answeredCount} of {questions.length} answered
-        </span>
-        {currentIndex === questions.length - 1 ? (
-          <Button
-            variant="success"
-            size="sm"
-            icon="check"
-            disabled={locked}
-            onClick={runtime.requestSubmit}
-          >
-            Submit Section
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            iconRight="chevronRight"
-            disabled={locked}
-            onClick={() => goTo(currentIndex + 1)}
-          >
-            Next
-          </Button>
-        )}
+      <footer className="flex items-center justify-center border-t border-slate-200 p-3 text-xs font-semibold text-slate-400 dark:border-slate-800">
+        {answeredCount} of {questions.length} answered
       </footer>
     </section>
   )
@@ -200,6 +169,24 @@ export default function ReadingTest() {
             ? 'All questions answered. Ready to submit.'
             : `${questions.length - answeredCount} question(s) are still unanswered. Unanswered questions score zero.`}
         </Alert>
+      }
+      actionBar={
+        <ExamActionBar
+          onBack={() => goTo(currentIndex - 1)}
+          backDisabled={currentIndex === 0 || locked}
+          hint={`${answeredCount} of ${questions.length} answered`}
+          primaryLabel={
+            currentIndex === questions.length - 1
+              ? 'Submit'
+              : answers[question?.id ?? ''] !== undefined
+                ? 'Continue'
+                : 'Check'
+          }
+          primaryDisabled={locked}
+          onPrimary={() =>
+            currentIndex === questions.length - 1 ? runtime.requestSubmit() : goTo(currentIndex + 1)
+          }
+        />
       }
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_18rem]">

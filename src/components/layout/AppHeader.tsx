@@ -42,7 +42,7 @@ export function AppHeader() {
                 cn(
                   'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition',
                   isActive
-                    ? 'bg-brand-500/10 text-brand-700 dark:text-brand-300'
+                    ? 'bg-brand-500/15 text-brand-700 shadow-[0_3px_0_0_rgb(26_52_225_/_0.25)] dark:text-brand-300'
                     : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
                 )
               }
@@ -54,10 +54,21 @@ export function AppHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          {profile.streak.current > 0 && (
-            <span className="hidden items-center gap-1.5 rounded-full bg-orange-500/12 px-3 py-1.5 text-xs font-bold text-orange-600 dark:text-orange-400 sm:flex">
-              <Icon name="flame" size={14} />
-              {profile.streak.current} day streak
+          <span
+            className="hidden items-center gap-1.5 rounded-full bg-orange-500/12 px-3 py-1.5 text-xs font-black text-orange-600 dark:text-orange-400 sm:flex"
+            title="Practice streak"
+          >
+            <Icon name="flame" size={14} />
+            {profile.streak.current}
+          </span>
+          <span className="hidden items-center gap-1.5 rounded-full bg-sky-500/12 px-3 py-1.5 text-xs font-black text-sky-600 dark:text-sky-400 md:flex">
+            <Icon name="star" size={14} />
+            {profile.results.length}
+          </span>
+          {profile.certificates.length > 0 && (
+            <span className="hidden items-center gap-1.5 rounded-full bg-amber-500/12 px-3 py-1.5 text-xs font-black text-amber-600 dark:text-amber-400 lg:flex">
+              <Icon name="trophy" size={14} />
+              {profile.certificates.length}
             </span>
           )}
           <button

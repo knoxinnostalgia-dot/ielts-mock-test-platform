@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 
 import { Badge } from '@/components/ui/Badge'
 import { Icon } from '@/components/ui/Icon'
@@ -31,6 +31,20 @@ export function ChoiceQuestionCard({
   onSelect,
   onToggleFlag,
 }: ChoiceQuestionCardProps) {
+  useEffect(() => {
+    if (disabled) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+      const number = Number(event.key)
+      if (number >= 1 && number <= question.options.length) {
+        event.preventDefault()
+        onSelect(number - 1)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [disabled, onSelect, question.options.length])
+
   return (
     <div className="animate-fade-in space-y-4" key={question.id}>
       {question.groupLabel && (
@@ -64,11 +78,11 @@ export function ChoiceQuestionCard({
         </button>
       </div>
 
-      <p className="text-base font-semibold leading-relaxed text-slate-900 dark:text-slate-50">
+      <p className="text-lg font-bold leading-relaxed text-slate-900 dark:text-slate-50">
         {question.prompt}
       </p>
 
-      <fieldset disabled={disabled} className="space-y-2">
+      <fieldset disabled={disabled} className="space-y-2.5">
         <legend className="sr-only">{question.prompt}</legend>
         {question.options.map((option, optionIndex) => {
           const active = selected === optionIndex
@@ -76,12 +90,12 @@ export function ChoiceQuestionCard({
             <label
               key={option}
               className={cn(
-                'flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 transition',
+                'flex cursor-pointer items-start gap-3 rounded-2xl border-2 px-4 py-3.5 transition-all',
                 'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-500',
                 active
-                  ? 'border-brand-500 bg-brand-500/8 shadow-sm'
-                  : 'border-slate-200 bg-white hover:border-brand-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-700 dark:hover:bg-slate-800/70',
-                disabled && 'cursor-not-allowed opacity-70 hover:border-slate-200 hover:bg-white dark:hover:bg-slate-900',
+                  ? 'border-brand-400 bg-brand-50 shadow-[0_4px_0_0_#1a34e1] dark:bg-brand-500/15'
+                  : 'border-b-4 border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-600',
+                disabled && 'cursor-not-allowed opacity-70 hover:translate-y-0',
               )}
             >
               <input
@@ -94,29 +108,33 @@ export function ChoiceQuestionCard({
               />
               <span
                 className={cn(
-                  'flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs font-bold transition',
+                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs font-black',
                   active
-                    ? 'bg-brand-600 text-white'
-                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+                    ? 'border-brand-600 bg-brand-600 text-white'
+                    : 'border-slate-300 bg-slate-50 text-slate-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300',
                 )}
                 aria-hidden="true"
               >
-                {OPTION_LETTERS[optionIndex] ?? optionIndex + 1}
+                {optionIndex + 1}
               </span>
               <span
                 className={cn(
-                  'text-sm leading-relaxed',
+                  'pt-1 text-sm leading-relaxed',
                   active
-                    ? 'font-medium text-slate-900 dark:text-slate-50'
+                    ? 'font-semibold text-slate-900 dark:text-slate-50'
                     : 'text-slate-700 dark:text-slate-300',
                 )}
               >
                 {option}
               </span>
+              <span className="ml-auto hidden pt-1 text-[10px] font-bold uppercase tracking-wide text-slate-400 sm:block">
+                {OPTION_LETTERS[optionIndex]}
+              </span>
             </label>
           )
         })}
       </fieldset>
+      <p className="text-[11px] font-medium text-slate-400">Press 1–{question.options.length} to answer</p>
     </div>
   )
 }

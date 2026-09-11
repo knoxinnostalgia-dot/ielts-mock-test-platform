@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
+import { ExamActionBar } from '@/components/exam/ExamActionBar'
 import { ExamShell } from '@/components/exam/ExamShell'
 import { IntegrityPanel } from '@/components/exam/IntegrityPanel'
 import { RichTextEditor } from '@/components/exam/RichTextEditor'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 import { Alert } from '@/components/ui/Feedback'
 import { WRITING_CATEGORY_BLURB, WRITING_CATEGORY_LABELS, getWritingPrompt } from '@/data/writingPrompts'
@@ -91,6 +91,14 @@ export default function WritingTest() {
             ? `${wordCount} words — inside the ${prompt.minWords}–${prompt.maxWords} range.`
             : `Your response is ${wordCount} words, outside the required ${prompt.minWords}–${prompt.maxWords} range. Submitting now will reduce your task-compliance score.`}
         </Alert>
+      }
+      actionBar={
+        <ExamActionBar
+          hint={statusMessage}
+          primaryLabel="Submit"
+          primaryDisabled={locked || wordCount === 0}
+          onPrimary={runtime.requestSubmit}
+        />
       }
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)_18rem]">
@@ -226,16 +234,6 @@ export default function WritingTest() {
             <span className="text-xs text-slate-500 dark:text-slate-400">
               {stats.sentenceCount} sentences · {stats.paragraphCount} paragraphs
             </span>
-            <Button
-              className="ml-auto"
-              variant="success"
-              size="sm"
-              icon="check"
-              disabled={locked || wordCount === 0}
-              onClick={runtime.requestSubmit}
-            >
-              Submit Section
-            </Button>
           </footer>
         </section>
 
