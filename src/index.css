@@ -30,6 +30,8 @@
   --animate-pop: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-pulse-ring: pulse-ring 2s ease-out infinite;
+  --animate-float: float 3.2s ease-in-out infinite;
+  --animate-confetti: confetti-fall 1.8s ease-in both;
 }
 
 @keyframes fade-in {
@@ -98,6 +100,27 @@
   }
 }
 
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, -12px, 0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--drift, 40px), 140px, 0) rotate(260deg);
+  }
+}
+
 @layer base {
   :root {
     color-scheme: light;
@@ -126,8 +149,9 @@
     z-index: -1;
     pointer-events: none;
     background:
-      radial-gradient(60rem 40rem at 10% -10%, rgb(51 102 255 / 0.14), transparent 60%),
-      radial-gradient(50rem 35rem at 100% 0%, rgb(20 184 166 / 0.12), transparent 55%);
+      radial-gradient(60rem 40rem at 8% -12%, rgb(51 102 255 / 0.18), transparent 58%),
+      radial-gradient(46rem 32rem at 92% 0%, rgb(88 204 2 / 0.12), transparent 52%),
+      radial-gradient(40rem 28rem at 70% 110%, rgb(206 130 255 / 0.1), transparent 50%);
   }
 
   :focus-visible {
@@ -164,6 +188,34 @@
 
   .focus-ring {
     @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
+  }
+
+  .press-3d {
+    box-shadow: 0 4px 0 0 rgb(15 23 42 / 0.18);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+
+  .press-3d:hover {
+    transform: translateY(-1px);
+  }
+
+  .press-3d:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 0 rgb(15 23 42 / 0.18);
+  }
+
+  .path-node {
+    @apply relative flex h-20 w-20 items-center justify-center rounded-full text-white;
+    box-shadow: 0 6px 0 0 color-mix(in srgb, var(--node) 70%, #000);
+  }
+
+  .path-node:hover {
+    transform: translateY(-2px);
+  }
+
+  .path-node:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 0 color-mix(in srgb, var(--node) 70%, #000);
   }
 }
 

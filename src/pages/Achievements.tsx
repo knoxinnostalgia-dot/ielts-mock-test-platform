@@ -100,48 +100,42 @@ export default function Achievements() {
             <Card
               key={achievement.id}
               className={cn(
-                'p-5 transition',
-                unlocked ? 'animate-pop' : 'opacity-70 grayscale',
+                'p-5 text-center transition hover:-translate-y-1 hover:shadow-md',
+                unlocked ? 'animate-pop' : 'opacity-55 grayscale',
               )}
             >
-              <div className="flex items-start gap-4">
-                <span
-                  className={cn(
-                    'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br',
-                    tier.ring,
-                  )}
-                >
-                  <Icon name={achievement.icon as IconName} size={24} />
-                </span>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-50">
-                      {achievement.title}
-                    </p>
-                    <span
-                      className={cn(
-                        'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                        tier.chip,
-                      )}
-                    >
-                      {tier.label}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                    {achievement.description}
-                  </p>
-                  <div className="mt-2.5">
-                    {unlocked ? (
-                      <Badge tone="success" icon="check">
-                        Unlocked {formatDate(unlockedAt)}
-                      </Badge>
-                    ) : (
-                      <Badge tone="neutral" icon="lock">
-                        Locked
-                      </Badge>
-                    )}
-                  </div>
-                </div>
+              <span
+                className={cn(
+                  'mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br shadow-[0_6px_0_0_rgb(15_23_42_/_0.12)]',
+                  tier.ring,
+                )}
+              >
+                <Icon name={achievement.icon as IconName} size={32} />
+              </span>
+              <p className="mt-4 text-sm font-black text-slate-900 dark:text-slate-50">
+                {achievement.title}
+              </p>
+              <span
+                className={cn(
+                  'mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                  tier.chip,
+                )}
+              >
+                {tier.label}
+              </span>
+              <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                {achievement.description}
+              </p>
+              <div className="mt-3 flex justify-center">
+                {unlocked ? (
+                  <Badge tone="success" icon="check">
+                    Unlocked {formatDate(unlockedAt)}
+                  </Badge>
+                ) : (
+                  <Badge tone="neutral" icon="lock">
+                    Locked
+                  </Badge>
+                )}
               </div>
             </Card>
           )

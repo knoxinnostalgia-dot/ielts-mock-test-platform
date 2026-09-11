@@ -8,15 +8,17 @@ type Size = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'bg-brand-600 text-white shadow-sm shadow-brand-600/30 hover:bg-brand-700 active:bg-brand-800 disabled:bg-brand-600/50',
+    'bg-brand-600 text-white shadow-[0_4px_0_0_#1a34e1] hover:bg-brand-500 active:translate-y-[3px] active:shadow-[0_1px_0_0_#1a34e1] disabled:bg-brand-600/50 disabled:shadow-none',
   secondary:
-    'bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white',
+    'bg-slate-900 text-white shadow-[0_4px_0_0_#0f172a] hover:bg-slate-800 active:translate-y-[3px] active:shadow-[0_1px_0_0_#0f172a] dark:bg-slate-100 dark:text-slate-900 dark:shadow-[0_4px_0_0_#94a3b8] dark:hover:bg-white',
   ghost:
     'bg-transparent text-slate-700 hover:bg-slate-200/70 dark:text-slate-200 dark:hover:bg-slate-800',
   outline:
-    'border border-slate-300 bg-white/70 text-slate-800 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:hover:bg-slate-800',
-  danger: 'bg-rose-600 text-white shadow-sm shadow-rose-600/30 hover:bg-rose-700 active:bg-rose-800',
-  success: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 hover:bg-emerald-700',
+    'border-2 border-b-4 border-slate-300 bg-white text-slate-800 hover:bg-slate-50 active:translate-y-[2px] active:border-b-2 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800',
+  danger:
+    'bg-rose-600 text-white shadow-[0_4px_0_0_#be123c] hover:bg-rose-500 active:translate-y-[3px] active:shadow-[0_1px_0_0_#be123c]',
+  success:
+    'bg-emerald-500 text-white shadow-[0_4px_0_0_#047857] hover:bg-emerald-400 active:translate-y-[3px] active:shadow-[0_1px_0_0_#047857]',
 }
 
 const SIZES: Record<Size, string> = {
@@ -54,7 +56,7 @@ export function Button({
       className={cn(
         'inline-flex items-center justify-center font-semibold transition-all duration-150',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
-        'disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]',
+        'disabled:cursor-not-allowed disabled:opacity-60',
         VARIANTS[variant],
         SIZES[size],
         fullWidth && 'w-full',

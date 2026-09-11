@@ -77,7 +77,7 @@ export function ExamNavbar({
           </div>
 
           <div className="hidden items-center gap-2 sm:flex">
-            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800 lg:w-28">
+            <div className="h-3.5 w-24 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800 lg:w-40">
               <div
                 className="h-full rounded-full bg-brand-600 transition-[width] duration-500"
                 style={{ width: `${overallPercent}%` }}

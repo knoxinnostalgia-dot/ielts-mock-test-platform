@@ -82,7 +82,7 @@ export default function History() {
                 <Card key={result.id} className="overflow-hidden">
                   <div className="flex flex-wrap items-center gap-4 p-5">
                     <span
-                      className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl text-white"
+                      className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl text-white shadow-[0_4px_0_0_rgb(15_23_42_/_0.22)]"
                       style={{ backgroundColor: band.color }}
                     >
                       <span className="text-lg font-bold leading-none">{result.cefr}</span>

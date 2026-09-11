@@ -20,7 +20,7 @@ import { FULL_TEST_PLAN, SKILL_ACCENTS, SKILL_LABELS, SKILL_ROUTES } from '@/uti
 import { skillLabel } from '@/utils/profile'
 import { sessionProgress } from '@/utils/progress'
 import { titleCase } from '@/utils/text'
-import { formatDateTime } from '@/utils/time'
+import { formatDateTime, toDayKey } from '@/utils/time'
 
 const SKILL_META: Record<SkillId, { icon: IconName; blurb: string; detail: string }> = {
   listening: {
@@ -61,9 +61,23 @@ export default function Dashboard() {
   const [pendingStart, setPendingStart] = useState<{ mode: 'full' | 'single'; skill?: SkillId } | null>(
     null,
   )
+  const [pathFocus, setPathFocus] = useState<SkillId | null>(null)
 
   const unfinished = session && !session.completedAt ? session : null
   const band = cefrBand(stats.averageCefr)
+  const practicedToday = profile.streak.history.includes(toDayKey())
+  const nextSkill =
+    FULL_TEST_PLAN.find((skill) => stats.skillAverages[skill] == null) ?? FULL_TEST_PLAN[0]
+  const highlightedSkill = pathFocus ?? nextSkill
+  const dailyQuests = [
+    { id: 'today', label: 'Practise today', done: practicedToday },
+    {
+      id: 'full',
+      label: 'Finish a full mock',
+      done: profile.results.some((result) => result.mode === 'full'),
+    },
+    { id: 'cert', label: 'Claim a certificate', done: profile.certificates.length > 0 },
+  ]
 
   const radarData = useMemo(
     () =>
@@ -153,118 +167,177 @@ export default function Dashboard() {
       )}
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card glass className="overflow-hidden">
-          <div className="relative p-6 sm:p-8">
-            <div
-              className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full opacity-20 blur-3xl"
-              style={{ backgroundColor: band.color }}
-            />
-            <div className="relative">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="brand" icon="sparkles">
-                  {DIFFICULTY_META[currentDifficulty].label} level
-                </Badge>
-                {profile.autoAdapt && <Badge tone="info">Adaptive difficulty on</Badge>}
-              </div>
-
-              {editingName ? (
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <input
-                    value={nameDraft}
-                    onChange={(event) => setNameDraft(event.target.value)}
-                    onKeyDown={(event) => event.key === 'Enter' && saveName()}
-                    aria-label="Candidate name"
-                    maxLength={40}
-                    className="h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-lg font-bold text-slate-900 outline-none focus-visible:border-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50"
-                  />
-                  <Button icon="check" onClick={saveName}>
-                    Save
-                  </Button>
+        <div className="space-y-4">
+          <Card glass className="overflow-hidden">
+            <div className="relative p-6 sm:p-8">
+              <div
+                className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full opacity-25 blur-3xl"
+                style={{ backgroundColor: band.color }}
+              />
+              <div className="relative">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="brand" icon="sparkles">
+                    {DIFFICULTY_META[currentDifficulty].label} level
+                  </Badge>
+                  {profile.autoAdapt && <Badge tone="info">Adaptive difficulty on</Badge>}
                 </div>
-              ) : (
-                <h1 className="mt-4 flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                  Welcome back, {profile.name}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNameDraft(profile.name)
-                      setEditingName(true)
-                    }}
-                    aria-label="Edit candidate name"
-                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
-                  >
-                    <Icon name="pen" size={16} />
-                  </button>
-                </h1>
-              )}
 
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                Take a full four-module mock under exam conditions, or drill a single skill. Every
-                test is scored locally, mapped to CEFR, and monitored for integrity.
-                {profile.email
-                  ? ` Certificates for ${profile.email} can be downloaded after each test.`
-                  : ' After a test you can sign in with your email to download a practice certificate.'}
-              </p>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => launch('full')}
-                  className="group flex items-center gap-4 rounded-2xl bg-brand-600 p-5 text-left text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:scale-[0.99]"
-                >
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15">
-                    <Icon name="trophy" size={24} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-base font-bold">Full Test</span>
-                    <span className="block text-xs text-brand-100">
-                      Listening → Reading → Writing → Speaking
-                    </span>
-                  </span>
-                  <Icon
-                    name="arrowRight"
-                    size={20}
-                    className="ml-auto transition-transform group-hover:translate-x-1"
-                  />
-                </button>
-
-                <div className="rounded-2xl border border-slate-200 bg-white/70 p-5 dark:border-slate-800 dark:bg-slate-900/60">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-50">
-                    Individual Skill Test
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    Practise one module in isolation
-                  </p>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    {FULL_TEST_PLAN.map((skill) => (
-                      <button
-                        key={skill}
-                        type="button"
-                        onClick={() => launch('single', skill)}
-                        className="flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
-                      >
-                        <span style={{ color: SKILL_ACCENTS[skill] }}>
-                          <Icon name={SKILL_META[skill].icon} size={16} />
-                        </span>
-                        {SKILL_LABELS[skill]}
-                      </button>
-                    ))}
+                {editingName ? (
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <input
+                      value={nameDraft}
+                      onChange={(event) => setNameDraft(event.target.value)}
+                      onKeyDown={(event) => event.key === 'Enter' && saveName()}
+                      aria-label="Candidate name"
+                      maxLength={40}
+                      className="h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-lg font-bold text-slate-900 outline-none focus-visible:border-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50"
+                    />
+                    <Button icon="check" onClick={saveName}>
+                      Save
+                    </Button>
                   </div>
-                </div>
+                ) : (
+                  <h1 className="mt-4 flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    Welcome back, {profile.name}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNameDraft(profile.name)
+                        setEditingName(true)
+                      }}
+                      aria-label="Edit candidate name"
+                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
+                    >
+                      <Icon name="pen" size={16} />
+                    </button>
+                  </h1>
+                )}
+
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  Follow the skill path, keep your streak alive, and claim a practice certificate after
+                  each attempt. Everything stays on this device.
+                </p>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+
+          <button
+            type="button"
+            onClick={() => launch('full')}
+            className="group relative w-full overflow-hidden rounded-[28px] bg-brand-600 p-6 text-left text-white shadow-[0_8px_0_0_#1a34e1] transition hover:-translate-y-0.5 active:translate-y-1 active:shadow-[0_3px_0_0_#1a34e1]"
+          >
+            <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/15" />
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-brand-100">
+              Section · Full mock
+            </p>
+            <p className="mt-2 text-2xl font-black tracking-tight">Take the complete exam</p>
+            <p className="mt-1 text-sm text-brand-100">
+              Listening → Reading → Writing → Speaking · 80 minutes
+            </p>
+            <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-black text-brand-700">
+              Start + certificate
+              <Icon name="arrowRight" size={16} className="transition-transform group-hover:translate-x-1" />
+            </span>
+          </button>
+
+          <Card className="overflow-hidden">
+            <CardHeader
+              title="Skill path"
+              subtitle="Tap a node to drill one module"
+              icon="target"
+              accent="#3366ff"
+            />
+            <CardBody className="pb-28">
+              <div className="relative flex flex-wrap items-start justify-center gap-x-4 gap-y-16 py-6 sm:gap-x-10">
+                <div className="pointer-events-none absolute left-10 right-10 top-16 hidden h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 sm:block" />
+                {FULL_TEST_PLAN.map((skill, index) => {
+                  const score = stats.totalTests ? stats.skillAverages[skill] : undefined
+                  const selected = highlightedSkill === skill
+                  return (
+                    <div
+                      key={skill}
+                      className={cn(
+                        'relative z-[1] flex w-24 flex-col items-center',
+                        selected && 'z-20',
+                      )}
+                      style={{ marginTop: index % 2 === 0 ? 0 : 28 }}
+                    >
+                      <span
+                        className="animate-float"
+                        style={{ animationDelay: `${index * 180}ms` }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setPathFocus(skill)}
+                          onDoubleClick={() => launch('single', skill)}
+                          className={cn(
+                            'path-node focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500',
+                            selected &&
+                              'ring-4 ring-white ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900',
+                          )}
+                          style={{
+                            ['--node' as string]: SKILL_ACCENTS[skill],
+                            backgroundColor: SKILL_ACCENTS[skill],
+                          }}
+                          aria-label={`${SKILL_LABELS[skill]} path node`}
+                          aria-pressed={selected}
+                        >
+                          <Icon name={SKILL_META[skill].icon} size={28} />
+                          {score != null && (
+                            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[10px] font-black text-slate-800 shadow">
+                              {Math.round(score)}
+                            </span>
+                          )}
+                        </button>
+                      </span>
+                      <span className="mt-2 text-[11px] font-black uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                        {SKILL_LABELS[skill]}
+                      </span>
+                      {selected && (
+                        <div
+                          className="absolute left-1/2 top-[calc(100%+0.35rem)] z-10 w-52 -translate-x-1/2 rounded-2xl p-3 text-left text-white shadow-[0_8px_0_0_rgb(15_23_42_/_0.18)]"
+                          style={{ backgroundColor: SKILL_ACCENTS[skill] }}
+                        >
+                          <span className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 rounded-sm"
+                            style={{ backgroundColor: SKILL_ACCENTS[skill] }}
+                          />
+                          <p className="relative text-sm font-black">{SKILL_LABELS[skill]}</p>
+                          <p className="relative mt-0.5 text-[11px] leading-relaxed text-white/90">
+                            {SKILL_META[skill].blurb}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => launch('single', skill)}
+                            className="relative mt-2 w-full rounded-xl bg-white py-2 text-xs font-black shadow-[0_3px_0_0_rgb(15_23_42_/_0.12)] active:translate-y-0.5 active:shadow-none"
+                            style={{ color: SKILL_ACCENTS[skill] }}
+                          >
+                            Start + certificate
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
+                Tap a node, then start. Numbers on nodes are your average score.
+              </p>
+            </CardBody>
+          </Card>
+        </div>
 
         <div className="space-y-4">
           <Card className="flex flex-col items-center p-6">
-            <ProgressRing
-              value={stats.averageScore}
-              label={stats.totalTests ? stats.averageCefr : '—'}
-              caption="Average CEFR"
-              color={band.color}
-              size={150}
-            />
+            <div className="animate-[float_3.2s_ease-in-out_infinite]">
+              <ProgressRing
+                value={stats.averageScore}
+                label={stats.totalTests ? stats.averageCefr : '—'}
+                caption="Average CEFR"
+                color={band.color}
+                size={168}
+                thickness={14}
+              />
+            </div>
             <p className="mt-3 text-center text-xs leading-relaxed text-slate-500 dark:text-slate-400">
               {stats.totalTests
                 ? `${band.label} · average score ${stats.averageScore}%`
@@ -275,24 +348,56 @@ export default function Dashboard() {
           <Card>
             <CardHeader title="Practice streak" icon="flame" accent="#f97316" />
             <CardBody>
-              <div className="flex gap-6">
-                <div>
-                  <p className="text-3xl font-bold tabular-nums text-slate-900 dark:text-slate-50">
-                    {profile.streak.current}
-                  </p>
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Current streak
-                  </p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold tabular-nums text-slate-900 dark:text-slate-50">
-                    {profile.streak.longest}
-                  </p>
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Longest streak
-                  </p>
+              <div className="flex items-center gap-4">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-500 text-white shadow-[0_5px_0_0_#c2410c]">
+                  <Icon name="flame" size={30} />
+                </span>
+                <div className="flex flex-1 gap-6">
+                  <div>
+                    <p className="text-3xl font-black tabular-nums text-slate-900 dark:text-slate-50">
+                      {profile.streak.current}
+                    </p>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Current streak
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black tabular-nums text-slate-900 dark:text-slate-50">
+                      {profile.streak.longest}
+                    </p>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Longest streak
+                    </p>
+                  </div>
                 </div>
               </div>
+              <ul className="mt-4 space-y-2">
+                {dailyQuests.map((quest) => (
+                  <li
+                    key={quest.id}
+                    className="flex items-center gap-2.5 rounded-xl border-2 border-b-4 border-slate-200 px-3 py-2 dark:border-slate-700"
+                  >
+                    <span
+                      className={cn(
+                        'flex h-6 w-6 items-center justify-center rounded-full text-white',
+                        quest.done ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600',
+                      )}
+                    >
+                      {quest.done ? <Icon name="check" size={14} /> : <span className="h-2 w-2 rounded-full bg-white/80" />}
+                    </span>
+                    <span
+                      className={cn(
+                        'text-sm font-semibold',
+                        quest.done
+                          ? 'text-slate-400 line-through'
+                          : 'text-slate-800 dark:text-slate-100',
+                      )}
+                    >
+                      {quest.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
               <CalendarHeatmap className="mt-4" days={profile.streak.history} weeks={14} />
             </CardBody>
           </Card>
@@ -321,7 +426,7 @@ export default function Dashboard() {
             tone: '#8b5cf6',
           },
         ].map((item) => (
-          <Card key={item.label} className="p-5">
+          <Card key={item.label} className="p-5 transition hover:-translate-y-1 hover:shadow-md">
             <div className="flex items-center gap-3">
               <span
                 className="flex h-10 w-10 items-center justify-center rounded-xl"
@@ -414,11 +519,11 @@ export default function Dashboard() {
                         setDifficulty(level)
                       }}
                       className={cn(
-                        'flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition',
+                        'flex items-center gap-3 rounded-xl border-2 border-b-4 px-3 py-2.5 text-left transition',
                         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
                         active
-                          ? 'border-brand-500 bg-brand-500/8'
-                          : 'border-slate-200 hover:border-brand-300 dark:border-slate-800',
+                          ? 'border-brand-500 bg-brand-500/8 shadow-[0_3px_0_0_#1a34e1]'
+                          : 'border-slate-200 hover:-translate-y-0.5 hover:border-brand-300 active:translate-y-0.5 dark:border-slate-800',
                       )}
                     >
                       <span
@@ -530,7 +635,7 @@ export default function Dashboard() {
                 key={skill}
                 type="button"
                 onClick={() => launch('single', skill)}
-                className="group flex flex-col rounded-xl border border-slate-200 p-4 text-left transition hover:border-brand-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-800"
+                className="group flex flex-col rounded-2xl border-2 border-b-4 border-slate-200 p-4 text-left transition hover:-translate-y-1 hover:border-brand-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:translate-y-0.5 dark:border-slate-800"
               >
                 <span
                   className="flex h-10 w-10 items-center justify-center rounded-xl"

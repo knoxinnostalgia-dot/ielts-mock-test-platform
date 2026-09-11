@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Alert, EmptyState } from '@/components/ui/Feedback'
+import { Confetti } from '@/components/ui/Confetti'
 import { Icon, type IconName } from '@/components/ui/Icon'
 import { ProgressBar, ProgressRing } from '@/components/ui/Progress'
 import { ACHIEVEMENTS } from '@/data/achievements'
@@ -81,6 +82,8 @@ export default function Results() {
 
   const band = cefrBand(result.cefr)
   const hasCertificate = profile.certificates.some((item) => item.resultId === result.id)
+  const celebration =
+    result.overallScore >= 80 ? 'Outstanding!' : result.overallScore >= 60 ? 'You’re learning!' : 'Keep going!'
 
   const sectionScores: { skill: SkillId; score: number; detail: string }[] = []
   if (result.listening)
@@ -156,35 +159,55 @@ export default function Results() {
 
       <Card glass className="overflow-hidden">
         <div className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center">
+          <Confetti />
           <div
-            className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full opacity-20 blur-3xl"
+            className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full opacity-25 blur-3xl"
             style={{ backgroundColor: band.color }}
           />
           <div className="relative flex justify-center">
-            <ProgressRing
-              value={result.overallScore}
-              label={result.cefr}
-              caption={`${result.overallScore}% overall`}
-              color={band.color}
-              size={168}
-              thickness={13}
-            />
+            <div className="animate-pop">
+              <ProgressRing
+                value={result.overallScore}
+                label={result.cefr}
+                caption={`${result.overallScore}% overall`}
+                color={band.color}
+                size={176}
+                thickness={14}
+              />
+            </div>
           </div>
 
           <div className="relative min-w-0">
-            <Badge tone="brand" icon="document">
+            <Badge tone="brand" icon="sparkles">
               {result.mode === 'full' ? 'Full mock test' : 'Individual skill test'}
             </Badge>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-              {band.label} · CEFR {result.cefr}
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 dark:text-slate-50">
+              {celebration}
             </h1>
+            <p className="mt-1 text-lg font-bold text-slate-800 dark:text-slate-100">
+              {band.label} · CEFR {result.cefr}
+            </p>
             <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">{band.description}</p>
             <p className="mt-3 text-xs font-medium text-slate-500 dark:text-slate-400">
               {result.candidateName} · {formatDateTime(result.completedAt)} · {result.difficulty} level
             </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {sectionScores.map((section) => (
+                <span
+                  key={section.skill}
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold text-white"
+                  style={{ backgroundColor: SKILL_ACCENTS[section.skill] }}
+                >
+                  {SKILL_LABELS[section.skill]} {section.score}%
+                </span>
+              ))}
+            </div>
           </div>
 
           <div className="relative flex flex-col gap-2">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+              Next steps
+            </p>
             <Button icon="trophy" onClick={() => setCertificateOpen(true)}>
               {hasCertificate ? 'Download Certificate' : 'Get Certificate'}
             </Button>
@@ -192,7 +215,7 @@ export default function Results() {
               Download PDF Report
             </Button>
             <Button variant="outline" icon="refresh" onClick={() => retake('full')}>
-              Retake Full Test
+              Practice again
             </Button>
             <Button variant="ghost" icon="home" onClick={() => navigate('/')}>
               Return to Dashboard
@@ -203,7 +226,7 @@ export default function Results() {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {sectionScores.map((section) => (
-          <Card key={section.skill} className="p-5">
+          <Card key={section.skill} className="p-5 transition hover:-translate-y-1 hover:shadow-md">
             <div className="flex items-center gap-3">
               <span
                 className="flex h-10 w-10 items-center justify-center rounded-xl"
