@@ -20,6 +20,7 @@ interface ExamShellProps {
   briefingSubtitle: string
   briefingPoints: string[]
   submitSummary?: ReactNode
+  actionBar?: ReactNode
   children: ReactNode
 }
 
@@ -30,6 +31,7 @@ export function ExamShell({
   briefingSubtitle,
   briefingPoints,
   submitSummary,
+  actionBar,
   children,
 }: ExamShellProps) {
   const navigate = useNavigate()
@@ -52,17 +54,22 @@ export function ExamShell({
         onExit={runtime.requestExit}
       />
 
-      <main className="mx-auto max-w-[1600px] px-3 pb-10 pt-20 sm:px-5">
+      <main
+        className={
+          runtime.phase !== 'briefing' && actionBar
+            ? 'mx-auto max-w-[1600px] px-3 pb-28 pt-20 sm:px-5'
+            : 'mx-auto max-w-[1600px] px-3 pb-10 pt-20 sm:px-5'
+        }
+      >
         {runtime.phase === 'briefing' ? (
           <div className="mx-auto max-w-2xl animate-slide-up">
-            <div className="surface-card overflow-hidden">
-              <div className="h-1.5 w-full" style={{ backgroundColor: accent }} />
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="flex h-11 w-11 items-center justify-center rounded-xl"
-                    style={{ backgroundColor: `${accent}1f`, color: accent }}
-                  >
+            <div className="overflow-hidden rounded-[28px] border-2 border-b-8 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <div className="px-6 py-5 text-white sm:px-8" style={{ backgroundColor: accent }}>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/80">
+                  Section · {SKILL_LABELS[skill]}
+                </p>
+                <div className="mt-3 flex items-center gap-3">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 text-white shadow-[0_4px_0_0_rgb(0_0_0_/_0.18)]">
                     <Icon
                       name={
                         skill === 'reading'
@@ -73,18 +80,18 @@ export function ExamShell({
                               ? 'pen'
                               : 'mic'
                       }
-                      size={22}
+                      size={26}
                     />
                   </span>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900 dark:text-slate-50">
-                      {briefingTitle}
-                    </h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{briefingSubtitle}</p>
+                    <h1 className="text-2xl font-black tracking-tight">{briefingTitle}</h1>
+                    <p className="text-sm text-white/85">{briefingSubtitle}</p>
                   </div>
                 </div>
+              </div>
+              <div className="p-6 sm:p-8">
 
-                <div className="mt-5 flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Badge tone="brand" icon="clock">
                     {resuming
                       ? `${formatClock(sectionState?.secondsRemaining ?? MODULE_SECONDS)} remaining`
@@ -119,15 +126,16 @@ export function ExamShell({
                     : 'Your microphone is used to record spoken answers for this module only. Recordings stay on this device and the camera is not used.'}
                 </Alert>
 
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
                   <Button
                     size="lg"
                     icon="play"
                     loading={runtime.starting}
                     onClick={() => void runtime.begin()}
                     className="flex-1"
+                    variant="success"
                   >
-                    {resuming ? 'Resume Section' : `Start ${SKILL_LABELS[skill]} Section`}
+                    {resuming ? 'Resume Section' : `Start ${SKILL_LABELS[skill]}`}
                   </Button>
                   <Button size="lg" variant="outline" icon="arrowLeft" onClick={() => navigate('/')}>
                     Back
@@ -140,6 +148,12 @@ export function ExamShell({
           children
         )}
       </main>
+
+      {runtime.phase !== 'briefing' && actionBar ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-slate-200 bg-white/95 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
+          {actionBar}
+        </div>
+      ) : null}
 
       <Modal
         open={runtime.exitModalOpen}

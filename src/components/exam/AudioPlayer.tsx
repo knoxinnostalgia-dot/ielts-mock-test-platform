@@ -98,7 +98,7 @@ export function AudioPlayer({
             'flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition',
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
             canInteract
-              ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30 hover:bg-brand-700 active:scale-95'
+              ? 'bg-brand-600 text-white shadow-[0_5px_0_0_#1a34e1] hover:bg-brand-500 active:translate-y-1 active:shadow-[0_2px_0_0_#1a34e1]'
               : 'cursor-not-allowed bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600',
           )}
         >
@@ -111,7 +111,7 @@ export function AudioPlayer({
 
         <div className="min-w-0 flex-1">
           <div
-            className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
+            className="h-3.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}

@@ -58,12 +58,11 @@ export function ExamNavbar({
         <span className="hidden h-8 w-px bg-slate-200 dark:bg-slate-800 md:block" />
 
         <div className="flex min-w-0 items-center gap-2">
-          <span
-            className="hidden h-2.5 w-2.5 shrink-0 rounded-full md:block"
+          <p
+            className="truncate rounded-full px-3 py-1 text-sm font-black text-white shadow-[0_3px_0_0_rgb(0_0_0_/_0.2)]"
             style={{ backgroundColor: SKILL_ACCENTS[skill] }}
-          />
-          <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
-            {SKILL_LABELS[skill]} Section
+          >
+            {SKILL_LABELS[skill]}
           </p>
         </div>
 
@@ -79,8 +78,8 @@ export function ExamNavbar({
           <div className="hidden items-center gap-2 sm:flex">
             <div className="h-3.5 w-24 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800 lg:w-40">
               <div
-                className="h-full rounded-full bg-brand-600 transition-[width] duration-500"
-                style={{ width: `${overallPercent}%` }}
+                className="h-full rounded-full transition-[width] duration-500"
+                style={{ width: `${overallPercent}%`, backgroundColor: SKILL_ACCENTS[skill] }}
               />
             </div>
             <span className="text-sm font-semibold tabular-nums text-slate-700 dark:text-slate-200">

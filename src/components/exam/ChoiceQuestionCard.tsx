@@ -93,7 +93,7 @@ export function ChoiceQuestionCard({
                 'flex cursor-pointer items-start gap-3 rounded-2xl border-2 px-4 py-3.5 transition-all',
                 'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-500',
                 active
-                  ? 'border-brand-500 bg-brand-500/10 shadow-[0_4px_0_0_#1a34e1]'
+                  ? 'border-brand-400 bg-brand-50 shadow-[0_4px_0_0_#1a34e1] dark:bg-brand-500/15'
                   : 'border-b-4 border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-600',
                 disabled && 'cursor-not-allowed opacity-70 hover:translate-y-0',
               )}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { AudioPlayer } from '@/components/exam/AudioPlayer'
+import { ExamActionBar } from '@/components/exam/ExamActionBar'
 import { ExamShell } from '@/components/exam/ExamShell'
 import { RecordingPlayback } from '@/components/exam/RecordingPlayback'
 import { Badge } from '@/components/ui/Badge'
@@ -165,6 +166,33 @@ export default function SpeakingTest() {
           {cueRecording ? 'cue card recorded' : 'cue card not recorded'}. Missing recordings score zero.
         </Alert>
       }
+      actionBar={
+        part === 1 ? (
+          <ExamActionBar
+            onBack={() => setSpeakingPosition(1, taskIndex - 1)}
+            backDisabled={taskIndex === 0 || locked || recording}
+            hint={`${completedRepeats}/${taskSet.repeatSentences.length} sentences recorded`}
+            primaryLabel={
+              taskIndex === taskSet.repeatSentences.length - 1 ? 'Continue to Part 2' : 'Continue'
+            }
+            primaryDisabled={locked || recording}
+            onPrimary={() =>
+              taskIndex === taskSet.repeatSentences.length - 1
+                ? setSpeakingPosition(2, 0)
+                : setSpeakingPosition(1, taskIndex + 1)
+            }
+          />
+        ) : (
+          <ExamActionBar
+            onBack={() => setSpeakingPosition(1, taskSet.repeatSentences.length - 1)}
+            backDisabled={locked || recording}
+            hint={cueRecording ? 'Cue card recorded' : 'Record your long turn'}
+            primaryLabel="Submit"
+            primaryDisabled={locked || recording}
+            onPrimary={runtime.requestSubmit}
+          />
+        )
+      }
     >
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="space-y-4">
@@ -192,11 +220,11 @@ export default function SpeakingTest() {
                   disabled={locked}
                   onClick={() => setSpeakingPosition(value, value === 1 ? taskIndex : 0)}
                   className={cn(
-                    'flex flex-1 items-center gap-3 rounded-2xl border px-4 py-3 text-left transition',
+                    'flex flex-1 items-center gap-3 rounded-2xl border-2 border-b-4 px-4 py-3 text-left transition',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-60',
                     active
-                      ? 'border-brand-500 bg-brand-500/8 shadow-sm'
-                      : 'border-slate-200 bg-white hover:border-brand-300 dark:border-slate-800 dark:bg-slate-900',
+                      ? 'border-brand-500 bg-brand-500/8 shadow-[0_3px_0_0_#1a34e1]'
+                      : 'border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-300 dark:border-slate-800 dark:bg-slate-900',
                   )}
                 >
                   <span
@@ -245,12 +273,12 @@ export default function SpeakingTest() {
                       disabled={locked || recording}
                       onClick={() => setSpeakingPosition(1, index)}
                       className={cn(
-                        'flex h-9 w-9 items-center justify-center rounded-lg border text-xs font-bold transition disabled:opacity-50',
+                        'flex h-9 w-9 items-center justify-center rounded-lg border-2 border-b-4 text-xs font-bold transition disabled:opacity-50',
                         repeatRecordings[task.id]
-                          ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                          ? 'border-emerald-400 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                           : 'border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-400',
                         index === taskIndex &&
-                          'ring-2 ring-brand-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900',
+                          'border-brand-500 bg-brand-600 text-white shadow-[0_3px_0_0_#1a34e1]',
                       )}
                     >
                       {index + 1}
@@ -273,52 +301,44 @@ export default function SpeakingTest() {
                 />
               </div>
 
-              <div className="mt-4 rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
-                <div className="flex flex-wrap items-center gap-3">
+              <div className="mt-4 rounded-2xl border-2 border-b-4 border-slate-200 p-5 dark:border-slate-800">
+                <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
                   {recording ? (
                     <>
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-600 text-white animate-pulse-ring">
-                        <Icon name="mic" size={20} />
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">
-                          Recording…
-                        </p>
+                      <button
+                        type="button"
+                        onClick={stopRecording}
+                        className="flex h-24 w-24 items-center justify-center rounded-full bg-rose-500 text-white shadow-[0_8px_0_0_#9f1239] transition active:translate-y-1 active:shadow-[0_3px_0_0_#9f1239]"
+                        aria-label="Stop recording"
+                      >
+                        <Icon name="stop" size={32} />
+                      </button>
+                      <div className="text-center sm:text-left">
+                        <p className="text-sm font-black text-rose-600 dark:text-rose-400">Recording…</p>
                         <p className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
                           Stops automatically in {formatClock(recordClock.secondsRemaining)}
                         </p>
                       </div>
-                      <Button
-                        className="ml-auto"
-                        variant="danger"
-                        icon="stop"
-                        onClick={stopRecording}
-                      >
-                        Stop Recording
-                      </Button>
                     </>
                   ) : (
                     <>
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                        <Icon name="mic" size={20} />
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                          {currentRepeatRecording ? 'Answer recorded' : 'Record your answer'}
+                      <button
+                        type="button"
+                        onClick={() => void beginRepeatRecording()}
+                        disabled={locked || !recorder.supported || (playCounts[repeatTask.id] ?? 0) === 0 || savingRecording}
+                        className="flex h-24 w-24 items-center justify-center rounded-full bg-brand-600 text-white shadow-[0_8px_0_0_#1a34e1] transition hover:-translate-y-0.5 active:translate-y-1 active:shadow-[0_3px_0_0_#1a34e1] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                        aria-label={currentRepeatRecording ? 'Record again' : 'Start recording'}
+                      >
+                        <Icon name="mic" size={36} />
+                      </button>
+                      <div className="text-center sm:text-left">
+                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">
+                          {currentRepeatRecording ? 'Answer recorded — tap to retry' : 'Tap to record'}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           You have {repeatTask.recordSeconds} seconds to repeat the sentence.
                         </p>
                       </div>
-                      <Button
-                        className="ml-auto"
-                        icon="mic"
-                        loading={savingRecording}
-                        disabled={locked || !recorder.supported || (playCounts[repeatTask.id] ?? 0) === 0}
-                        onClick={() => void beginRepeatRecording()}
-                      >
-                        {currentRepeatRecording ? 'Record Again' : 'Start Recording'}
-                      </Button>
                     </>
                   )}
                 </div>
@@ -346,39 +366,6 @@ export default function SpeakingTest() {
                       “{repeatTask.text}”
                     </p>
                   </details>
-                )}
-              </div>
-
-              <div className="mt-4 flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon="chevronLeft"
-                  disabled={taskIndex === 0 || locked || recording}
-                  onClick={() => setSpeakingPosition(1, taskIndex - 1)}
-                >
-                  Previous
-                </Button>
-                {taskIndex === taskSet.repeatSentences.length - 1 ? (
-                  <Button
-                    className="ml-auto"
-                    size="sm"
-                    iconRight="arrowRight"
-                    disabled={locked || recording}
-                    onClick={() => setSpeakingPosition(2, 0)}
-                  >
-                    Continue to Part 2
-                  </Button>
-                ) : (
-                  <Button
-                    className="ml-auto"
-                    size="sm"
-                    iconRight="chevronRight"
-                    disabled={locked || recording}
-                    onClick={() => setSpeakingPosition(1, taskIndex + 1)}
-                  >
-                    Next Sentence
-                  </Button>
                 )}
               </div>
             </section>
@@ -520,16 +507,6 @@ export default function SpeakingTest() {
             </section>
           )}
 
-          <div className="flex justify-end">
-            <Button
-              variant="success"
-              icon="check"
-              disabled={locked || recording}
-              onClick={runtime.requestSubmit}
-            >
-              Submit Section
-            </Button>
-          </div>
         </div>
 
         <aside className="space-y-3">
